@@ -8,8 +8,6 @@ import { Input } from "@/components/ui/input";
 import { 
   Plus, 
   Search, 
-  Calendar, 
-  Filter, 
   Trash2,
   Download,
   Info,
@@ -98,15 +96,21 @@ export default function ExpensePage() {
   // Pagination logic
   const paginatedData = useMemo(() => {
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return expenses.slice(start, start + ITEMS_PER_PAGE).map((t: Transaction) => ({
-      ...t,
-      date: format(new Date(t.expenseDate || new Date()), 'MMM dd, yyyy'),
-      category: t.category?.name || 'General',
-      amount: -Number(t.amount),
-      status: 'Settled' as const,
-      type: 'expense' as const,
-      description: t.description || ''
-    }));
+    return expenses.slice(start, start + ITEMS_PER_PAGE).map((t: Transaction) => {
+      // Safe date resolution
+      const rawDate = t.expenseDate || t.date || new Date();
+      const parsedDate = new Date(rawDate);
+      
+      return {
+        ...t,
+        date: format(isNaN(parsedDate.getTime()) ? new Date() : parsedDate, 'MMM dd, yyyy'),
+        category: t.category?.name || 'General',
+        amount: -Number(t.amount || 0),
+        status: 'Settled' as const,
+        type: 'expense' as const,
+        description: t.description || ''
+      };
+    });
   }, [expenses, currentPage]);
 
   const totalPages = Math.ceil(expenses.length / ITEMS_PER_PAGE);
@@ -129,7 +133,7 @@ export default function ExpensePage() {
     })).sort((a, b) => b.value - a.value).slice(0, 5);
   }, [expenses]);
 
-  const totalExpenseAmount = expenses.reduce((sum: number, t: any) => sum + Number(t.amount), 0);
+  const totalExpenseAmount = expenses.reduce((sum: number, t: Transaction) => sum + Number(t.amount || 0), 0);
 
   return (
     <div className="space-y-8">
@@ -177,7 +181,7 @@ export default function ExpensePage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All</SelectItem>
-                {categories.map((cat: any) => (
+                {categories.map((cat: Category) => (
                   <SelectItem key={cat.id} value={cat.id.toString()}>{cat.name}</SelectItem>
                 ))}
               </SelectContent>
@@ -329,8 +333,8 @@ export default function ExpensePage() {
           type="expense" 
           initialData={{
             ...selectedTransaction,
-            amount: Number(selectedTransaction.amount),
-            date: selectedTransaction.expenseDate
+            amount: Number(selectedTransaction.amount || 0),
+            date: selectedTransaction.expenseDate ? new Date(selectedTransaction.expenseDate).toISOString() : new Date().toISOString()
           }}
         />
       )}

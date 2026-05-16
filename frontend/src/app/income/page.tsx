@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { 
   Plus, 
   Search, 
-  Calendar, 
   Filter, 
   Download,
   FileSpreadsheet,
@@ -95,15 +94,21 @@ export default function IncomePage() {
   // Pagination logic
   const paginatedData = useMemo(() => {
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return incomes.slice(start, start + ITEMS_PER_PAGE).map((t: Transaction) => ({
-      ...t,
-      date: format(new Date(t.incomeDate || new Date()), 'MMM dd, yyyy'),
-      category: t.category?.name || 'General',
-      amount: Number(t.amount),
-      status: 'Settled' as const,
-      type: 'income' as const,
-      description: t.description || ''
-    }));
+    return incomes.slice(start, start + ITEMS_PER_PAGE).map((t: Transaction) => {
+      // Safe date resolution
+      const rawDate = t.incomeDate || t.date || new Date();
+      const parsedDate = new Date(rawDate);
+
+      return {
+        ...t,
+        date: format(isNaN(parsedDate.getTime()) ? new Date() : parsedDate, 'MMM dd, yyyy'),
+        category: t.category?.name || 'General',
+        amount: Number(t.amount || 0),
+        status: 'Settled' as const,
+        type: 'income' as const,
+        description: t.description || ''
+      };
+    });
   }, [incomes, currentPage]);
 
   const totalPages = Math.ceil(incomes.length / ITEMS_PER_PAGE);
@@ -163,7 +168,7 @@ export default function IncomePage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All</SelectItem>
-              {categories.map((cat: any) => (
+              {categories.map((cat: Category) => (
                 <SelectItem key={cat.id} value={cat.id.toString()}>{cat.name}</SelectItem>
               ))}
             </SelectContent>
@@ -273,8 +278,8 @@ export default function IncomePage() {
           type="income" 
           initialData={{
             ...selectedTransaction,
-            amount: Number(selectedTransaction.amount),
-            date: selectedTransaction.incomeDate
+            amount: Number(selectedTransaction.amount || 0),
+            date: selectedTransaction.incomeDate ? new Date(selectedTransaction.incomeDate).toISOString() : new Date().toISOString()
           }}
         />
       )}
