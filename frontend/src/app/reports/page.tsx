@@ -60,27 +60,39 @@ export default function ReportsPage() {
 
   const combinedData = useMemo(() => {
     let combined = [
-      ...incomes.map((t: Transaction) => ({
-        ...t,
-        type: 'income' as const,
-        date: t.incomeDate || '',
-        title: t.title,
-        subtext: t.description || 'Income record',
-        category: t.category?.name || 'General',
-        amount: Number(t.amount),
-        status: 'SETTLED'
-      })),
-      ...expenses.map((t: Transaction) => ({
-        ...t,
-        type: 'expense' as const,
-        date: t.expenseDate || '',
-        title: t.title,
-        subtext: t.description || 'Expense record',
-        category: t.category?.name || 'General',
-        amount: -Number(t.amount),
-        status: 'PROCESSED'
-      }))
-    ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      ...incomes.map((t: Transaction) => {
+        const rawDate = t.incomeDate || t.date || new Date();
+        const parsedDate = new Date(rawDate);
+        return {
+          ...t,
+          type: 'income' as const,
+          date: format(isNaN(parsedDate.getTime()) ? new Date() : parsedDate, 'MMM dd, yyyy'),
+          title: t.title,
+          subtext: t.description || 'Income record',
+          category: t.category?.name || 'General',
+          amount: Number(t.amount || 0),
+          status: 'SETTLED' as const
+        };
+      }),
+      ...expenses.map((t: Transaction) => {
+        const rawDate = t.expenseDate || t.date || new Date();
+        const parsedDate = new Date(rawDate);
+        return {
+          ...t,
+          type: 'expense' as const,
+          date: format(isNaN(parsedDate.getTime()) ? new Date() : parsedDate, 'MMM dd, yyyy'),
+          title: t.title,
+          subtext: t.description || 'Expense record',
+          category: t.category?.name || 'General',
+          amount: -Number(t.amount || 0),
+          status: 'PROCESSED' as const
+        };
+      })
+    ].sort((a, b) => {
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      return dateB - dateA;
+    });
 
     if (typeFilter !== 'all') {
       combined = combined.filter(t => t.type === typeFilter);
@@ -154,7 +166,7 @@ export default function ReportsPage() {
           <div className="space-y-1.5 flex-1 min-w-[150px]">
             <label className="text-[10px] font-bold text-gray-500 uppercase">Type</label>
             <Select value={typeFilter} onValueChange={(val) => {
-              setTypeFilter(val);
+              if (val) setTypeFilter(val);
               setCurrentPage(1);
             }}>
               <SelectTrigger className="h-10">

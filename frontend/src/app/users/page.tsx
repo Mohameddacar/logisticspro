@@ -216,7 +216,9 @@ export default function UserManagementPage() {
                     <td className="py-4 px-4">
                       <Select 
                         value={user.roleId || ''} 
-                        onValueChange={(roleId) => updateRoleMutation.mutate({ userId: user.id, roleId })}
+                        onValueChange={(roleId) => {
+                          if (roleId) updateRoleMutation.mutate({ userId: user.id, roleId });
+                        }}
                       >
                         <SelectTrigger className="w-[140px] h-8 text-[10px] font-bold uppercase rounded-lg border-blue-100 text-blue-600 bg-blue-50/50">
                           <SelectValue placeholder="Assign Role" />

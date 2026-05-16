@@ -17,7 +17,7 @@ interface Transaction {
   date: string;
   title: string;
   subtext: string;
-  asset: string;
+  asset?: string;
   category: string;
   amount: number;
   type: 'income' | 'expense';
@@ -71,7 +71,7 @@ export default function TransactionLedgerTable({ data }: TransactionLedgerTableP
                   </div>
                 </div>
               </TableCell>
-              <TableCell className="text-sm font-medium text-gray-700">{item.asset}</TableCell>
+              <TableCell className="text-sm font-medium text-gray-700">{item.asset || 'N/A'}</TableCell>
               <TableCell className="text-sm text-gray-600">{item.category}</TableCell>
               <TableCell className={cn(
                 "text-sm font-bold text-right",
