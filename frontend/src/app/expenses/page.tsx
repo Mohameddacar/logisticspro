@@ -167,7 +167,7 @@ export default function ExpensePage() {
           <div className="space-y-1.5 flex-1 min-w-[200px]">
             <label className="text-xs font-bold text-gray-500 uppercase">QAYBTA</label>
             <Select value={categoryId} onValueChange={(val) => {
-              setCategoryId(val);
+              if (val) setCategoryId(val);
               setCurrentPage(1);
             }}>
               <SelectTrigger className="h-11">

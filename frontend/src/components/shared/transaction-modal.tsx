@@ -109,8 +109,8 @@ export default function TransactionModal({ isOpen, onClose, type, initialData }:
     e.preventDefault();
     mutation.mutate({
       title: formData.title,
-      categoryId: parseInt(formData.categoryId),
-      amount: parseFloat(formData.amount),
+      categoryId: parseInt(formData.categoryId || '0'),
+      amount: parseFloat(formData.amount || '0'),
       [isIncome ? 'incomeDate' : 'expenseDate']: new Date(formData.date).toISOString(),
       description: formData.description
     });
@@ -164,7 +164,9 @@ export default function TransactionModal({ isOpen, onClose, type, initialData }:
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label className="text-xs font-bold text-gray-500 uppercase tracking-wider">QAYBTA</Label>
-                <Select value={formData.categoryId} onValueChange={(val) => setFormData({...formData, categoryId: val})}>
+                <Select value={formData.categoryId} onValueChange={(val) => {
+                  if (val) setFormData({...formData, categoryId: val});
+                }}>
                   <SelectTrigger className="h-11 rounded-lg bg-gray-50 border-gray-200 focus:bg-white transition-all w-full">
                     <SelectValue placeholder="Select Category">
                       {categories.find(c => c.id.toString() === formData.categoryId)?.name}

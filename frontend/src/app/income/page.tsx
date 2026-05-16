@@ -152,7 +152,7 @@ export default function IncomePage() {
           </div>
           
           <Select defaultValue="all" onValueChange={(val) => {
-            setCategoryId(val);
+            if (val) setCategoryId(val);
             setCurrentPage(1);
           }}>
             <SelectTrigger className="w-[180px] h-11">
