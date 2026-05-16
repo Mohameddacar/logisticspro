@@ -8,7 +8,7 @@ import {
   DialogFooter
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Trash2, AlertTriangle } from 'lucide-react';
+import { Trash2, AlertTriangle, Loader2 } from 'lucide-react';
 
 interface DeleteConfirmDialogProps {
   isOpen: boolean;
@@ -16,6 +16,7 @@ interface DeleteConfirmDialogProps {
   onConfirm: () => void;
   title: string;
   description: string;
+  isLoading?: boolean;
 }
 
 export default function DeleteConfirmDialog({ 
@@ -23,7 +24,8 @@ export default function DeleteConfirmDialog({
   onClose, 
   onConfirm, 
   title, 
-  description 
+  description,
+  isLoading = false
 }: DeleteConfirmDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -48,13 +50,11 @@ export default function DeleteConfirmDialog({
           </Button>
           <Button 
             variant="destructive" 
-            onClick={() => {
-              onConfirm();
-              onClose();
-            }}
+            onClick={onConfirm}
+            disabled={isLoading}
             className="font-bold gap-2 flex-1 h-11 rounded-lg shadow-lg shadow-red-100 bg-red-600 hover:bg-red-700 transition-all"
           >
-            <Trash2 className="w-4 h-4" /> Delete
+            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />} Delete
           </Button>
         </DialogFooter>
       </DialogContent>
