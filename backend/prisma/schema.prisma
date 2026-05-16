@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String   @id @default(uuid())
+  fullName      String
+  username      String   @unique
+  email         String   @unique
+  phoneNumber   String?
+  companyName   String?
+  password      String
+  status        UserStatus @default(ACTIVE)
+  viewAllRecords Boolean    @default(false)
+
+  roleId        String?
+  role          Role?    @relation(fields: [roleId], references: [id])
+
+  incomes       Income[]
+  expenses      Expense[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  
+  users       User[]
+  permissions RolePermission[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Permission {
+  id          String   @id @default(uuid())
+  name        String   @unique // e.g. "View Dashboard"
+  key         String   @unique // e.g. "dashboard.view"
+  module      String   // e.g. "Dashboard"
+
+  roles       RolePermission[]
+
+  createdAt   DateTime @default(now())
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+model IncomeCategory {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+
+  incomes   Income[]
+
+  createdAt DateTime @default(now())
+}
+
+model ExpenseCategory {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+
+  expenses  Expense[]
+
+  createdAt DateTime @default(now())
+}
+
+model Income {
+  id          String   @id @default(uuid())
+
+  userId      String
+  categoryId  Int
+
+  title       String
+  amount      Decimal  @db.Decimal(12, 2)
+
+  description String?
+
+  incomeDate  DateTime
+
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category     IncomeCategory   @relation(fields: [categoryId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([incomeDate])
+}
+
+model Expense {
+  id           String   @id @default(uuid())
+
+  userId       String
+  categoryId   Int
+
+  title        String
+  amount       Decimal  @db.Decimal(12, 2)
+
+  description  String?
+
+  expenseDate  DateTime
+
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category      ExpenseCategory   @relation(fields: [categoryId], references: [id])
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([expenseDate])
+}
