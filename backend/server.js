@@ -30,7 +30,7 @@ app.use((req, res, next) => {
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.FRONTEND_URL || true, // Explicitly allow frontend URL in production
+  origin: process.env.FRONTEND_URL || process.env.ALLOWED_ORIGINS?.split(',') || true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']

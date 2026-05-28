@@ -9,7 +9,7 @@ const protect = async (req, res, next) => {
     res.cookie('jwt', '', {
       httpOnly: true,
       secure: process.env.NODE_ENV !== 'development',
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
       expires: new Date(0),
     });
     return res.status(401).json({ 
@@ -38,11 +38,11 @@ const protect = async (req, res, next) => {
     if (!user) {
       console.error(`[Auth] User not found for ID: ${decoded.userId}`);
       res.cookie('jwt', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV !== 'development',
-      sameSite: 'strict',
-      expires: new Date(0),
-    });
+        httpOnly: true,
+        secure: process.env.NODE_ENV !== 'development',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+        expires: new Date(0),
+      });
       return res.status(401).json({ 
         success: false, 
         message: 'User account no longer exists' 
@@ -56,7 +56,7 @@ const protect = async (req, res, next) => {
     res.cookie('jwt', '', {
       httpOnly: true,
       secure: process.env.NODE_ENV !== 'development',
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
       expires: new Date(0),
     });
     res.status(401).json({ 

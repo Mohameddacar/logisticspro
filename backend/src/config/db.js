@@ -3,11 +3,21 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
 
-const pool = new pg.Pool({ 
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false // Required for Neon in some environments
-  }
+const databaseUrl = process.env.DATABASE_URL;
+
+if (!databaseUrl) {
+  throw new Error(
+    '[DATABASE] Missing DATABASE_URL. Create backend/.env and set DATABASE_URL.'
+  );
+}
+
+const hostname = new URL(databaseUrl).hostname;
+const isLocalDb = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+
+const pool = new pg.Pool({
+  connectionString: databaseUrl,
+  // Remote managed Postgres providers often require SSL, local Postgres usually does not.
+  ssl: isLocalDb ? false : { rejectUnauthorized: false }
 });
 
 pool.on('error', (err) => {
@@ -19,16 +29,5 @@ const prisma = new PrismaClient({
   adapter,
   log: ['query', 'info', 'warn', 'error'],
 });
-
-// Optional: Test connection immediately
-pool.connect()
-  .then(client => {
-    console.log('[DATABASE] Successfully connected to pool');
-    client.release();
-  })
-  .catch(err => {
-    console.error('[DATABASE] Error connecting to pool:', err);
-    if (err.code === 'ECONNREFUSED') console.error('HINT: Check if your database is reachable.');
-  });
 
 export default prisma;
